@@ -64,13 +64,13 @@ function buildReturn(params: AskUserParamsSchema, answer: string | undefined): A
 	};
 }
 
-async function executeSelect(params: AskUserParamsSchema, ctx: ExtensionToolContext, signal?: AbortSignal): Promise<AgentToolResult<AskUserResultSchema>> {
-	const answer = await ctx.ui.select(params.question, params.options ?? [], { signal });
+async function executeFreeText(params: AskUserParamsSchema, ctx: ExtensionToolContext, signal?: AbortSignal): Promise<AgentToolResult<AskUserResultSchema>> {
+	const answer = await ctx.ui.input(params.question, undefined, { signal });
 	return buildReturn(params, answer);
 }
 
-async function executeFreeText(params: AskUserParamsSchema, ctx: ExtensionToolContext, signal?: AbortSignal): Promise<AgentToolResult<AskUserResultSchema>> {
-	const answer = await ctx.ui.input(params.question, undefined, { signal });
+async function executeSelect(params: AskUserParamsSchema, ctx: ExtensionToolContext, signal?: AbortSignal): Promise<AgentToolResult<AskUserResultSchema>> {
+	const answer = await ctx.ui.select(params.question, params.options ?? [], { signal });
 	return buildReturn(params, answer);
 }
 
