@@ -64,13 +64,13 @@ function buildReturn(params: AskUserParamsSchema, answer: string | undefined): A
 	};
 }
 
-async function executeSelect(params: AskUserParamsSchema, ctx: ExtensionToolContext): Promise<AgentToolResult<AskUserResultSchema>> {
-	const answer = await ctx.ui.select(params.question, params.options ?? []);
+async function executeSelect(params: AskUserParamsSchema, ctx: ExtensionToolContext, signal?: AbortSignal): Promise<AgentToolResult<AskUserResultSchema>> {
+	const answer = await ctx.ui.select(params.question, params.options ?? [], { signal });
 	return buildReturn(params, answer);
 }
 
-async function executeFreeText(params: AskUserParamsSchema, ctx: ExtensionToolContext): Promise<AgentToolResult<AskUserResultSchema>> {
-	const answer = await ctx.ui.input(params.question);
+async function executeFreeText(params: AskUserParamsSchema, ctx: ExtensionToolContext, signal?: AbortSignal): Promise<AgentToolResult<AskUserResultSchema>> {
+	const answer = await ctx.ui.input(params.question, undefined, { signal });
 	return buildReturn(params, answer);
 }
 
@@ -85,7 +85,7 @@ export default function (pi: ExtensionAPI) {
 			"Use when you need user input to continue.",
 		parameters: AskUserParams,
 
-		async execute(_toolCallId: string, params: AskUserParamsSchema, _signal, _onUpdate, ctx): Promise<AgentToolResult<AskUserResultSchema>> {
+		async execute(_toolCallId: string, params: AskUserParamsSchema, signal, _onUpdate, ctx): Promise<AgentToolResult<AskUserResultSchema>> {
 			if (!ctx.hasUI) {
 				return {
 					content: [
@@ -103,10 +103,9 @@ export default function (pi: ExtensionAPI) {
 			}
 
 			if (params.options && params.options.length > 0) {
-				return await executeSelect(params, ctx);
+				return await executeSelect(params, ctx, signal);
 			}
-			return await executeFreeText(params, ctx);
+			return await executeFreeText(params, ctx, signal);
 		}
 	})
 }
-
