@@ -79,7 +79,10 @@ export default function (pi: ExtensionAPI) {
 		name: "ask_user",
 		label: "Ask User",
 		description:
-			"Ask the user a question and get their answer. Provide `options` for a selection list. Use when you need user input to continue.",
+			"Ask the user a question and get their answer." +
+			"Provide `options` for a selection list." +
+			"Otherwise, the user can provide free-text input." +
+			"Use when you need user input to continue.",
 		parameters: AskUserParams,
 
 		async execute(_toolCallId: string, params: AskUserParamsSchema, _signal, _onUpdate, ctx): Promise<AgentToolResult<AskUserResultSchema>> {
