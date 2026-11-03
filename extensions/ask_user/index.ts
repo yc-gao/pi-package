@@ -84,6 +84,8 @@ export default function (pi: ExtensionAPI) {
 			"Otherwise, the user can provide free-text input." +
 			"Use when you need user input to continue.",
 		parameters: AskUserParams,
+		exposure: "model-only",
+		executionMode: "sequential",
 
 		async execute(_toolCallId: string, params: AskUserParamsSchema, signal, _onUpdate, ctx): Promise<AgentToolResult<AskUserResultSchema>> {
 			if (!ctx.hasUI) {
