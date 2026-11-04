@@ -10,7 +10,10 @@
  */
 
 import type { AgentToolResult, ExtensionAPI, ExtensionToolContext } from "@earendil-works/pi-coding-agent";
-import { Type } from "typebox";
+import { Container, Text } from "@earendil-works/pi-tui";
+import { Static, Type } from "typebox";
+
+import { SelectList } from "./select_list";
 
 const AskUserParams = Type.Object({
 	question: Type.String({ description: "The question to ask the user." }),
@@ -19,22 +22,26 @@ const AskUserParams = Type.Object({
 			description:
 				"Optional list of choices to show the user. Empty or missing means free-text input is allowed.",
 		}),
-	)
+	),
+	multiSelect: Type.Optional(
+		Type.Boolean({
+			description:
+				"Optional flag to allow multiple selections. Only valid if `options` is provided.",
+		}),
+	),
 });
 
-interface AskUserParamsSchema {
-	question: string;
-	options?: string[];
-}
+type AskUserParamsSchema = Static<typeof AskUserParams>;
+
 
 interface AskUserResultSchema {
 	question: string;
 	options: string[];
-	answer: string | null;
+	answers: string[] | undefined;
 }
 
-function buildReturn(params: AskUserParamsSchema, answer: string | undefined): AgentToolResult<AskUserResultSchema> {
-	if (!answer) {
+function buildReturn(params: AskUserParamsSchema, answers: string[] | undefined): AgentToolResult<AskUserResultSchema> {
+	if (!answers || answers.length === 0) {
 		return {
 			content: [
 				{
@@ -44,8 +51,8 @@ function buildReturn(params: AskUserParamsSchema, answer: string | undefined): A
 			],
 			details: {
 				question: params.question,
-				options: params.options ?? [],
-				answer: null,
+				options: params.options,
+				answers: undefined,
 			} as AskUserResultSchema,
 		};
 	}
@@ -53,38 +60,52 @@ function buildReturn(params: AskUserParamsSchema, answer: string | undefined): A
 		content: [
 			{
 				type: "text",
-				text: `User answered: ${answer}`,
+				text: `User answered: ${answers.join(", ")}`,
 			},
 		],
 		details: {
 			question: params.question,
-			options: params.options ?? [],
-			answer,
+			options: params.options,
+			answers,
 		} as AskUserResultSchema,
 	};
 }
 
 async function executeFreeText(params: AskUserParamsSchema, ctx: ExtensionToolContext, signal?: AbortSignal): Promise<AgentToolResult<AskUserResultSchema>> {
 	const answer = await ctx.ui.input(params.question, undefined, { signal });
-	return buildReturn(params, answer);
+	return buildReturn(params, answer ? [answer] : undefined);
 }
 
-async function executeSelect(params: AskUserParamsSchema, ctx: ExtensionToolContext, signal?: AbortSignal): Promise<AgentToolResult<AskUserResultSchema>> {
-	const answer = await ctx.ui.select(params.question, params.options ?? [], { signal });
-	return buildReturn(params, answer);
+async function executeSelect(params: AskUserParamsSchema, multiSelect: boolean, ctx: ExtensionToolContext, signal?: AbortSignal): Promise<AgentToolResult<AskUserResultSchema>> {
+	const answers = await ctx.ui.custom<string[] | undefined>((tui, theme, keybindings, done) => {
+		const container = new Container();
+		container.addChild(new Text(theme.fg("accent", params.question), 0, 1));
+
+		const selectList = new SelectList(params.options ?? [], multiSelect, {
+			selectedItem(t) {
+				return theme.fg("accent", t);
+			},
+			noMatch: (t) => theme.fg("warning", t)
+		});
+		selectList.onSelect = (items) => done(items);
+		selectList.onCancel = () => done(undefined);
+		container.addChild(selectList)
+
+		return {
+			render(w: number) { return container.render(w); },
+			handleInput(data: string) { selectList.handleInput(data); tui.requestRender(); },
+			invalidate() { return container.invalidate(); }
+		};
+	});
+	return buildReturn(params, answers);
 }
 
 export default function (pi: ExtensionAPI) {
 	pi.registerTool({
 		name: "ask_user",
 		label: "Ask User",
-		description:
-			"Ask the user a question and get their answer." +
-			"Provide `options` for a selection list." +
-			"Otherwise, the user can provide free-text input." +
-			"Use when you need user input to continue.",
+		description: "Ask the user a question and return their answer. supports free-text input(no options), single-select, and multi-select.",
 		parameters: AskUserParams,
-		exposure: "model-only",
 		executionMode: "sequential",
 
 		async execute(_toolCallId: string, params: AskUserParamsSchema, signal, _onUpdate, ctx): Promise<AgentToolResult<AskUserResultSchema>> {
@@ -98,14 +119,18 @@ export default function (pi: ExtensionAPI) {
 					],
 					details: {
 						question: params.question,
-						options: params.options ?? [],
-						answer: null,
+						options: params.options,
+						answers: undefined,
 					} as AskUserResultSchema,
 				};
 			}
 
 			if (params.options && params.options.length > 0) {
-				return await executeSelect(params, ctx, signal);
+				if (params.multiSelect) {
+					return await executeSelect(params, true, ctx, signal);
+				} else {
+					return await executeSelect(params, false, ctx, signal);
+				}
 			}
 			return await executeFreeText(params, ctx, signal);
 		}
