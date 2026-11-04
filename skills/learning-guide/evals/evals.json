@@ -11,7 +11,8 @@
         "Clarifies the learning goal via ask_user with multiple-choice options",
         "Probes the cognitive boundary (code-yes, ML-no) via ask_user with multiple-choice options",
         "Presents a learning plan as a diagram and confirms before teaching",
-        "Explains new concepts by building on prior knowledge rather than dumping facts"
+        "Explains new concepts by building on prior knowledge rather than dumping facts",
+        "Asks only one question per message, mostly multiple choice, never yes/no"
       ]
     },
     {
@@ -36,7 +37,8 @@
         "Starts from the stated boundary (high-school physics) rather than assuming more",
         "Sketches a framework showing where entanglement sits among related concepts",
         "Confirms the learning goal and plan with the user before teaching",
-        "Uses diagrams to convey relationships, keeping lines ≤120 characters"
+        "Uses diagrams to convey relationships, keeping lines ≤120 characters",
+        "Uses plain numbering and avoids hard-to-distinguish symbols such as circled numbers"
       ]
     }
   ]
