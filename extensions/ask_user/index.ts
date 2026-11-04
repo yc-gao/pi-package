@@ -126,11 +126,7 @@ export default function (pi: ExtensionAPI) {
 			}
 
 			if (params.options && params.options.length > 0) {
-				if (params.multiSelect) {
-					return await executeSelect(params, true, ctx, signal);
-				} else {
-					return await executeSelect(params, false, ctx, signal);
-				}
+				return await executeSelect(params, params.multiSelect ?? false, ctx, signal);
 			}
 			return await executeFreeText(params, ctx, signal);
 		}
