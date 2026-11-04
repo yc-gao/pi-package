@@ -1,89 +1,112 @@
-import { Component, truncateToWidth, matchesKey } from "@earendil-works/pi-tui";
+import type { Component, Keybinding, KeybindingsManager } from "@earendil-works/pi-tui";
+import { matchesKey, truncateToWidth } from "@earendil-works/pi-tui";
 
-interface SelectListTheme {
+export interface SelectListTheme {
     selectedItem: (text: string) => string;
     noMatch: (text: string) => string;
+    dim: (text: string) => string;
 }
 
 export class SelectList implements Component {
     private options: string[];
     private multiSelect: boolean;
     private theme: SelectListTheme;
+    private keybindings: KeybindingsManager;
 
-    private selectedItems: Set<string> = new Set();
+    // Tracked by index so duplicate labels stay distinct and output order follows
+    // the option order rather than the order the user clicked.
+    private selectedItems: Set<number> = new Set();
     private currentIndex: number = 0;
 
     public onSelect: (items: string[]) => void = () => { };
     public onCancel: () => void = () => { }
 
-    constructor(options: string[], multiSelect: boolean, theme: SelectListTheme) {
+    constructor(options: string[], multiSelect: boolean, theme: SelectListTheme, keybindings: KeybindingsManager) {
         this.options = options;
         this.multiSelect = multiSelect;
         this.theme = theme;
+        this.keybindings = keybindings;
     }
+
     render(width: number): string[] {
-        let lines: string[] = [];
+        const lines: string[] = [];
         if (this.options.length === 0) {
-            lines.push(this.theme.noMatch("  (no options)"));
-        } else {
-            this.options.forEach((option, index) => {
-                if (this.multiSelect) {
-                    const isSelected = this.selectedItems.has(option);
-                    const isCurrent = index === this.currentIndex;
-
-                    let prefix = isSelected ? "• " : "◦ ";
-                    prefix = isSelected || isCurrent ? this.theme.selectedItem(prefix) : prefix;
-                    const label = isSelected || isCurrent ? this.theme.selectedItem(option) : option
-                    lines.push(truncateToWidth(prefix + label, width));
-                } else {
-                    const isCurrent = index === this.currentIndex;
-                    const prefix = isCurrent ? this.theme.selectedItem("• ") : "◦ ";
-                    const label = isCurrent ? this.theme.selectedItem(option) : option
-                    lines.push(truncateToWidth(prefix + label, width));
-                }
-
-            })
+            lines.push(truncateToWidth(this.theme.noMatch("  (no options)"), width));
             lines.push("");
-            if (this.multiSelect) {
-                lines.push(this.theme.noMatch(truncateToWidth("↑↓ navigate • space select/deselect • enter confirm • esc/ctrl+c cancel", width)));
-            } else {
-                lines.push(this.theme.noMatch(truncateToWidth("↑↓ navigate • enter select • esc/ctrl+c cancel", width)));
-            }
+            lines.push(truncateToWidth(this.theme.dim(`  ${this.keyText("tui.select.cancel", "esc")} cancel`), width));
+            return lines;
         }
+
+        this.options.forEach((option, index) => {
+            const isCurrent = index === this.currentIndex;
+            const isSelected = this.multiSelect ? this.selectedItems.has(index) : isCurrent;
+
+            let prefix = isSelected ? "• " : "◦ ";
+            prefix = isCurrent ? this.theme.selectedItem(prefix) : prefix;
+
+            const label = isCurrent ? this.theme.selectedItem(option) : option;
+            lines.push(truncateToWidth(prefix + label, width));
+        });
+
+        lines.push("");
+        lines.push(truncateToWidth(this.theme.dim(this.renderHint()), width));
         return lines;
     }
+
     handleInput(data: string) {
-        if (matchesKey(data, "escape") || matchesKey(data, "ctrl+c")) {
+        if (this.keybindings.matches(data, "tui.select.cancel")) {
             this.onCancel();
             return;
         }
-        if (matchesKey(data, "up")) {
+        if (this.options.length === 0) return;
+
+        if (this.keybindings.matches(data, "tui.select.up")) {
             this.currentIndex = (this.currentIndex - 1 + this.options.length) % this.options.length;
             return;
         }
-        if (matchesKey(data, "down")) {
+        if (this.keybindings.matches(data, "tui.select.down")) {
             this.currentIndex = (this.currentIndex + 1) % this.options.length;
             return;
         }
+
         if (this.multiSelect) {
             if (matchesKey(data, "space")) {
-                const selectedOption = this.options[this.currentIndex];
-                if (this.selectedItems.has(selectedOption)) {
-                    this.selectedItems.delete(selectedOption);
+                if (this.selectedItems.has(this.currentIndex)) {
+                    this.selectedItems.delete(this.currentIndex);
                 } else {
-                    this.selectedItems.add(selectedOption);
+                    this.selectedItems.add(this.currentIndex);
                 }
-            }
-            if (matchesKey(data, "enter")) {
-                this.onSelect(Array.from(this.selectedItems));
                 return;
             }
-        } else {
-            if (matchesKey(data, "enter")) {
-                this.onSelect([this.options[this.currentIndex]]);
+            if (this.keybindings.matches(data, "tui.select.confirm")) {
+                this.onSelect(this.collectSelected());
                 return;
             }
+        } else if (this.keybindings.matches(data, "tui.select.confirm")) {
+            const selectedOption = this.options[this.currentIndex];
+            this.onSelect([selectedOption]);
         }
     }
+
     invalidate() { }
+
+    private collectSelected(): string[] {
+        return this.options.filter((_, index) => this.selectedItems.has(index));
+    }
+
+    /** Resolve a configured keybinding to its keys, falling back to a literal symbol. */
+    private keyText(keybinding: Keybinding, fallback: string): string {
+        const keys = this.keybindings.getKeys(keybinding);
+        return keys.length > 0 ? keys.join("/") : fallback;
+    }
+
+    private renderHint(): string {
+        const navigate = `${this.keyText("tui.select.up", "↑")}/${this.keyText("tui.select.down", "↓")}`;
+        const confirm = this.keyText("tui.select.confirm", "enter");
+        const cancel = this.keyText("tui.select.cancel", "esc");
+        const hint = this.multiSelect
+            ? `${navigate} navigate • space select/deselect • ${confirm} confirm • ${cancel} cancel`
+            : `${navigate} navigate • ${confirm} select • ${cancel} cancel`;
+        return `  ${hint}`;
+    }
 }
