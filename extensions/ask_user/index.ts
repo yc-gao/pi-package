@@ -117,6 +117,15 @@ async function executeSelect(
 	ctx: ExtensionToolContext,
 	signal?: AbortSignal,
 ): Promise<AgentToolResult<AskUserDetails>> {
+	const choice = await ctx.ui.select(params.question, params.options ?? [], { signal });
+	return choice === undefined ? cancelled(params) : answered(params, [choice]);
+}
+
+async function executeMultiSelect(
+	params: AskUserParams,
+	ctx: ExtensionToolContext,
+	signal?: AbortSignal,
+): Promise<AgentToolResult<AskUserDetails>> {
 	if (signal?.aborted) return cancelled(params);
 
 	const multiSelect = params.multiSelect ?? false;
@@ -274,11 +283,9 @@ export default function (pi: ExtensionAPI) {
 						"multi-select requires the interactive terminal UI; retry without `multiSelect` for a single choice.",
 					);
 				}
-				const choice = await ctx.ui.select(params.question, params.options, { signal });
-				return choice === undefined ? cancelled(params) : answered(params, [choice]);
+				return await executeSelect(params, ctx, signal);
 			}
-
-			return await executeSelect(params, ctx, signal);
+			return await executeMultiSelect(params, ctx, signal);
 		},
 	});
 }
