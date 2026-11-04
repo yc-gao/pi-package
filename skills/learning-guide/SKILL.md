@@ -1,19 +1,18 @@
 ---
 name: learning-guide
 description: >
-  Guide the user step by step through learning a new topic, from what they
-  already know to the target concept, in a structured and interactive lesson.
-  Trigger on: "teach me X", "explain X to me", "help me learn X", "I want to
-  understand X", "walk me through X", "how does X work under the hood".
-  Use it when the user wants to be guided through learning something, not when
-  they want a quick factual lookup or a one-line definition.
+  Teach the user a topic through a structured, interactive lesson: map the
+  subject, agree on a goal and a plan, then explain step by step and check
+  understanding as you go. Optionally keep synchronized notes in the user's
+  Obsidian vault. Trigger on: "teach me X", "explain X to me", "help me learn
+  X", "I want to understand X", "walk me through X", "how does X work under the
+  hood". Not for quick factual lookups or one-line definitions.
 ---
 
 # Learning guide
 
-Guide the user through learning something new, from what they already know to
-the target concept. Teaching is structured and interactive, not a lecture
-dump. Never start explaining before the planning phases are done.
+Run a lesson as a guided build-up, not a lecture dump. Nothing is explained
+until the map, the goal, the boundary and the plan are settled with the user.
 
 ## Core principles
 
@@ -37,25 +36,39 @@ is noise.
 
 ## Workflow
 
-The phases are ordered and all of them are required. The step that is most
-often forgotten is Phase 1 — do not start from the goal, start from the map.
+The phases are ordered and all of them are required. The step most often
+forgotten is Phase 1 — do not start from the goal, start from the map.
 
 ```
+0. offer synchronized notes          (user decides)
 1. map the knowledge framework
-2. confirm the learning goal      (user decides)
+2. confirm the learning goal         (user decides)
 3. locate the cognitive boundary
-4. agree on the learning plan
+4. agree on the learning plan        (iterate until consensus)
 5. teach step by step
-6. check understanding per goal
+6. check understanding after each goal
 ```
 
 Keep the big picture: the framework from Phase 1 stays the backbone. Goals,
 boundary checks and the plan are all read off that framework, and teaching
 follows it edge by edge.
 
-### Phase 1 — Recall the knowledge network and draw the framework
+### Phase 0 — Offer synchronized notes
 
-Before anything else:
+Before anything else, ask the user whether they want notes kept in sync while
+learning. Use `ask_user` with multiple-choice options, for example:
+
+- Keep synchronized notes in my Obsidian vault.
+- No notes, just the conversation.
+
+Notes live inside the user's Obsidian vault and are rendered by Obsidian, so
+they can carry rich visualization — diagrams, graphs, tables — beyond what the
+chat can show. If the user says yes, confirm the vault location, then create
+and update the notes as the lesson advances (framework, plan, each new node,
+open questions, misunderstandings corrected). If the user says no, never write
+notes; keep everything in the conversation.
+
+### Phase 1 — Recall the knowledge network and draw the framework
 
 1. Retrieve or recall the relevant knowledge network for the subject.
 2. Sketch a knowledge framework: the map of nodes and edges covering the
@@ -87,10 +100,14 @@ that follows.
 
 ### Phase 4 — Propose the learning plan and reach consensus
 
-1. Draw the plan as a diagram: the path from the boundary to the goal, along
+1. Draw the plan as a diagram: the path from the boundary to the goal along
    the framework, listing each step (the new node or edge) in order.
-2. Present it to the user for confirmation.
-3. Adjust it based on feedback. Reach agreement before teaching anything.
+2. Every step must be reachable from the previous one, so the plan never
+   jumps ahead of the boundary.
+3. Every step must move toward the agreed goal; cut anything that is only
+   tangential, no matter how interesting.
+4. Present the plan and iterate: adjust on feedback, re-present, repeat until
+   the user agrees. Do not teach anything before consensus is explicit.
 
 ### Phase 5 — Teach along the plan
 
@@ -102,21 +119,23 @@ Advance step by step along the agreed path. Each step:
   joins the network instead of floating beside it.
 - Uses a diagram whenever structure, relationships or a path are involved.
 
-### Phase 6 — Check understanding after every learning goal
+### Phase 6 — Check understanding after each goal
 
-After finishing each learning goal — not only at the very end:
+After finishing each learning task — not only at the very end:
 
 - Design questions via `ask_user` to confirm what was actually learned.
-- Prefer questions that reveal reasoning (can the user derive the next node?)
+- Prefer questions that require reasoning (can the user derive the next node?)
   over recall of facts.
-- Fix each misunderstanding one at a time, then continue.
+- Correct each misunderstanding one at a time, re-explaining from the node the
+  learner actually holds, then continue.
+- Update the notes if the user opted in.
 
 ## Interaction rules
 
 - **One question per message.** Never bundle several questions together.
 - **Use `ask_user`** for every question.
 - **Mostly multiple choice**, with a few short open-ended questions; **never
-  yes/no questions** — they reveal little about understanding.
+  yes/no or true/false questions** — they reveal little about understanding.
 - **Big picture first.** Draw the framework before asking about goals or
   boundaries.
 - **The user owns the goal.** Offer candidates, do not decide.
@@ -134,21 +153,25 @@ After finishing each learning goal — not only at the very end:
 ## Diagram options
 
 ASCII trees for hierarchy, node-edge graphs for the knowledge network, arrow
-chains for causal or derivation paths, tables for comparisons.
+chains for causal or derivation paths, tables for comparisons. In Obsidian
+notes, richer visuals (Mermaid, canvases, embedded graphs) are available.
 
 ## Example flow
 
 1. User: "I want to learn how transformers work."
-2. Agent recalls the ML knowledge network and sketches the framework
+2. Agent asks via `ask_user` whether to keep synchronized notes in the
+   Obsidian vault.
+3. Agent recalls the ML knowledge network and sketches the framework
    (vectors → similarity → attention → self-attention → transformers).
-3. Agent proposes candidate goals via `ask_user`, e.g.:
+4. Agent proposes candidate goals via `ask_user`, e.g.:
    - Understand attention well enough to read a paper.
    - Grasp the intuition only, no math.
    - Implement a minimal transformer.
-4. User picks one.
-5. Agent searches the user's notes, then asks one boundary question, e.g.
+5. User picks one.
+6. Agent searches the user's notes, then asks one boundary question, e.g.
    "Which best describes your comfort with vector embeddings?" with options.
-6. Agent draws the plan and confirms it:
+7. Agent draws the plan, presents it, adjusts on feedback, and repeats until
+   the user agrees:
 
    ```
    boundary: vector embeddings
@@ -158,6 +181,7 @@ chains for causal or derivation paths, tables for comparisons.
                     └─ multi-head attention   <- goal
    ```
 
-7. Agent teaches step by step, one node per step, with diagrams.
-8. After the attention step, the agent asks one reasoning question, corrects
+8. Agent teaches step by step, one node per step, with diagrams, updating the
+   notes if the user opted in.
+9. After the attention step, the agent asks one reasoning question, corrects
    the misunderstanding it reveals, then continues.
