@@ -42,9 +42,9 @@ export class SelectList implements Component {
             const isSelected = this.multiSelect ? this.selectedItems.has(index) : isCurrent;
 
             let prefix = isSelected ? "• " : "◦ ";
-            prefix = isCurrent ? this.theme.selectedItem(prefix) : prefix;
+            prefix = isCurrent || isSelected ? this.theme.selectedItem(prefix) : prefix;
 
-            const label = isCurrent ? this.theme.selectedItem(option) : option;
+            const label = isCurrent || isSelected ? this.theme.selectedItem(option) : option;
             lines.push(truncateToWidth(prefix + label, width));
         });
 

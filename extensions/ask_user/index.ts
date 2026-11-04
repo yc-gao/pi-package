@@ -43,6 +43,20 @@ interface AskUserDetails {
 	status: AskUserStatus;
 }
 
+const MAX_INLINE_OPTIONS = 4;
+
+/** Collapse whitespace so the compact renderers stay on one line. */
+function oneLine(text: unknown): string {
+	return String(text ?? "")
+		.replace(/\s+/g, " ")
+		.trim();
+}
+
+function textContent(result: Pick<AgentToolResult, "content">): string | undefined {
+	const content = result.content.find((item) => item.type === "text");
+	return content?.type === "text" ? content.text : undefined;
+}
+
 function detailsFor(params: AskUserParams, status: AskUserStatus, answers?: string[]): AskUserDetails {
 	return {
 		question: params.question,
@@ -168,6 +182,73 @@ export default function (pi: ExtensionAPI) {
 			"Ask the user a question and return their answer. Supports free-text input (no options), single-select, and multi-select. Reports cancelled or empty answers distinctly.",
 		parameters: AskUserParamsSchema,
 		executionMode: "sequential",
+
+		renderCall(args, theme, context) {
+			const text = (context.lastComponent as Text | undefined) ?? new Text("", 0, 0);
+
+			let content = theme.fg("toolTitle", theme.bold("ask_user"));
+			content += " " + theme.fg("accent", oneLine(args.question));
+			if (args.multiSelect) content += theme.fg("dim", " (multi-select)");
+
+			const options = Array.isArray(args.options) ? args.options : [];
+			if (options.length > 0) {
+				const shown = context.expanded ? options : options.slice(0, MAX_INLINE_OPTIONS);
+				const numbered = shown.map((option, index) => `${index + 1}. ${oneLine(option)}`);
+				if (shown.length < options.length) {
+					numbered.push(`… +${options.length - shown.length} more`);
+				}
+				content += `\n${theme.fg("dim", `  ${numbered.join(", ")}`)}`;
+			}
+
+			text.setText(content);
+			return text;
+		},
+
+		renderResult(result, { expanded }, theme, context) {
+			if (context.isPartial) {
+				return new Text(theme.fg("warning", "waiting for the user…"), 0, 0);
+			}
+
+			const details = result.details as AskUserDetails | undefined;
+			if (!details) {
+				return new Text(textContent(result) ?? "", 0, 0);
+			}
+
+			const answers = details.answers ?? [];
+
+			switch (details.status) {
+				case "answered": {
+					const mark = theme.fg("success", "✓ ");
+					if (answers.length === 1) {
+						return new Text(mark + theme.fg("accent", oneLine(answers[0] ?? "")), 0, 0);
+					}
+					const count = theme.fg("dim", `${answers.length} selected`);
+					if (!expanded) {
+						const joined = answers.map((answer) => oneLine(answer)).join(", ");
+						return new Text(mark + count + theme.fg("accent", ` ${joined}`), 0, 0);
+					}
+					const lines = [mark + count];
+					for (const answer of answers) {
+						lines.push(theme.fg("accent", `  - ${oneLine(answer)}`));
+					}
+					return new Text(lines.join("\n"), 0, 0);
+				}
+				case "cancelled":
+					return new Text(theme.fg("warning", "✕ ") + theme.fg("dim", "cancelled"), 0, 0);
+				case "empty": {
+					const reason = details.options?.length
+						? "confirmed without selecting"
+						: "answered empty";
+					return new Text(theme.fg("warning", "✕ ") + theme.fg("dim", reason), 0, 0);
+				}
+				case "unavailable": {
+					const message = textContent(result) ?? "no interactive UI available";
+					return new Text(theme.fg("error", `✕ ${oneLine(message)}`), 0, 0);
+				}
+			}
+
+			return new Text(textContent(result) ?? "", 0, 0);
+		},
 
 		async execute(
 			_toolCallId: string,
