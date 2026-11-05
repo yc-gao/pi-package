@@ -1,12 +1,13 @@
 ---
 name: learning-guide
 description: >
-  Teach the user a topic through a structured, interactive lesson: map the
-  subject, agree on a goal and a plan, then explain step by step and check
-  understanding as you go. Optionally keep synchronized notes in the user's
-  Obsidian vault. Trigger on: "teach me X", "explain X to me", "help me learn
-  X", "I want to understand X", "walk me through X", "how does X work under the
-  hood". Not for quick factual lookups or one-line definitions.
+  Teach a topic through a structured, interactive lesson: map the knowledge
+  network into stages, confirm the learner's goal and cognitive boundary,
+  agree on a learning plan, then teach stage by stage with diagrams and
+  understanding checks, optionally keeping synchronized notes in the user's
+  Obsidian vault. Use when the user asks to learn, understand, or be taught a
+  topic ("teach me X", "explain X to me", "help me understand X", "walk me
+  through X"). Not for quick factual lookups or one-line definitions.
 ---
 
 # Learning guide
@@ -21,18 +22,20 @@ until the map, the goal, the boundary and the plan are settled with the user.
 True understanding means the learner can derive new knowledge from what they
 already know. In a learner's mind, knowledge is not a pile of isolated
 propositions but a network: nodes are concepts, edges are the logical
-relationships between them. If a node is forgotten, the learner can rebuild it
-by following the edges of the network.
+relationships between them. Even if a node is missing — forgotten, never
+learned — it can be rebuilt by following the edges out of the nodes that
+remain.
 
 So every teaching step must start from existing knowledge and extend the
-network one node or edge at a time, until the target is reached.
+network one node or edge at a time, until the target is reached. A lesson that
+adds isolated facts adds no edges, and those facts will not survive.
 
 ### Build outward from the cognitive boundary
 
 Before adding any new node or edge, locate the learner's cognitive boundary:
 the edge of what they currently understand. Knowledge derived from that
 boundary is the knowledge that sticks. Knowledge delivered from somewhere else
-is noise.
+is noise, however correct it is.
 
 ## Workflow
 
@@ -40,18 +43,17 @@ The phases are ordered and all of them are required. The step most often
 forgotten is Phase 1 — do not start from the goal, start from the map.
 
 ```
-0. offer synchronized notes          (user decides)
-1. map the knowledge framework
-2. confirm the learning goal         (user decides)
-3. locate the cognitive boundary
-4. agree on the learning plan        (iterate until consensus)
-5. teach step by step
-6. check understanding after each goal
+0. offer synchronized notes            (user decides)
+1. map the knowledge network, split into stages
+2. confirm the goal + cognitive boundary (user decides)
+3. agree on the learning plan            (iterate until consensus)
+4. teach stage by stage
+5. check understanding after each task
 ```
 
 Keep the big picture: the framework from Phase 1 stays the backbone. Goals,
-boundary checks and the plan are all read off that framework, and teaching
-follows it edge by edge.
+boundary checks, stages and the plan are all read off that framework, and
+teaching follows it edge by edge.
 
 ### Phase 0 — Offer synchronized notes
 
@@ -62,56 +64,64 @@ learning. Use `ask_user` with multiple-choice options, for example:
 - No notes, just the conversation.
 
 Notes live inside the user's Obsidian vault and are rendered by Obsidian, so
-they can carry rich visualization — diagrams, graphs, tables — beyond what the
-chat can show. If the user says yes, confirm the vault location, then create
-and update the notes as the lesson advances (framework, plan, each new node,
-open questions, misunderstandings corrected). If the user says no, never write
-notes; keep everything in the conversation.
+they can carry rich visualization — Mermaid diagrams, canvases, graph views,
+tables — beyond what the chat can show. If the user says yes, create and keep
+updating the notes as the lesson advances: framework and stages, the agreed
+plan, each new node and edge, open questions, and misunderstandings that were
+corrected. If the user says no, never write notes; keep everything in the
+conversation.
 
 ### Phase 1 — Recall the knowledge network and draw the framework
 
-1. Retrieve or recall the relevant knowledge network for the subject.
-2. Sketch a knowledge framework: the map of nodes and edges covering the
-   target concept.
-3. Show where the target concept sits in that framework.
+1. Retrieve or recall the knowledge network for the subject: the concepts
+   involved and the logical relations between them.
+2. Sketch the framework: the map of nodes and edges covering the target
+   concept, and where the target sits inside it.
+3. Split that framework into learning stages — a few coherent chunks that can
+   each be taught and checked as a unit. Stages are the unit for Phase 4 and
+   Phase 5; the edges inside a stage stay individual steps.
 
 Never skip this phase and never replace it with a list of isolated facts. It
 keeps the lesson grounded in a map, and it gives the later phases something to
 refer to.
 
-### Phase 2 — Confirm the learning goal with the user
+### Phase 2 — Confirm the goal and locate the cognitive boundary
 
-The learning goal is decided by the user, never assumed. Read the possible
-goals off the framework, guess 3-5 plausible ones, and ask the user to pick one
-or state their own. Use `ask_user` with multiple-choice options. Get an
-explicit, unambiguous answer before proceeding.
+Two things get settled here, both with the user, and neither is assumed.
 
-### Phase 3 — Locate the cognitive boundary
+**Goal.** Read the plausible goals off the framework, guess 3-5 of them, and
+ask the user to pick one or state their own. Use `ask_user` with
+multiple-choice options.
 
-Find out what the user already knows and where their understanding stops:
+**Boundary.** Find out what the user already knows and where their
+understanding stops:
 
 1. Search the user's local knowledge base first — notes, files, earlier
    conversation — for evidence of existing knowledge.
-2. Then design questions via `ask_user` to probe the boundary: where does the
-   user start to feel unsure?
+2. Then probe with `ask_user`: present candidate starting points read off the
+   framework and let the user say which ones they already hold, and where they
+   start to feel unsure.
 
 Do not assume the boundary; find it. It is the launch point for all teaching
 that follows.
 
-### Phase 4 — Propose the learning plan and reach consensus
+### Phase 3 — Propose the learning plan and reach consensus
 
 1. Draw the plan as a diagram: the path from the boundary to the goal along
-   the framework, listing each step (the new node or edge) in order.
-2. Every step must be reachable from the previous one, so the plan never
-   jumps ahead of the boundary.
-3. Every step must move toward the agreed goal; cut anything that is only
-   tangential, no matter how interesting.
+   the framework, listing each stage and the steps (new nodes and edges)
+   inside it, in order.
+2. The plan must spread outward from the boundary: every step reachable from
+   the previous one, nothing introduced before its prerequisites. Never jump
+   ahead of the boundary because a concept is important.
+3. The plan must always move toward the agreed goal: cut anything that is only
+   tangential, no matter how interesting or how much it belongs to the
+   framework.
 4. Present the plan and iterate: adjust on feedback, re-present, repeat until
    the user agrees. Do not teach anything before consensus is explicit.
 
-### Phase 5 — Teach along the plan
+### Phase 4 — Teach stage by stage
 
-Advance step by step along the agreed path. Each step:
+Advance along the agreed path, one stage at a time. Each step inside a stage:
 
 - Builds the new node or edge directly from what the user already
   understands.
@@ -119,16 +129,17 @@ Advance step by step along the agreed path. Each step:
   joins the network instead of floating beside it.
 - Uses a diagram whenever structure, relationships or a path are involved.
 
-### Phase 6 — Check understanding after each goal
+### Phase 5 — Check understanding after each task
 
-After finishing each learning task — not only at the very end:
+After finishing each learning task — each stage, not only at the very end:
 
 - Design questions via `ask_user` to confirm what was actually learned.
-- Prefer questions that require reasoning (can the user derive the next node?)
-  over recall of facts.
-- Correct each misunderstanding one at a time, re-explaining from the node the
+- Prefer questions that require reasoning (can the user derive the next node
+  from what they now hold?) over recall of facts.
+- Correct each misunderstanding one at a time: re-explain from the node the
   learner actually holds, then continue.
 - Update the notes if the user opted in.
+- Only move to the next stage once the current one is confirmed.
 
 ## Interaction rules
 
@@ -140,10 +151,12 @@ After finishing each learning task — not only at the very end:
   boundaries.
 - **The user owns the goal.** Offer candidates, do not decide.
 - **Agree before teaching.** No explanation until the plan is confirmed.
-- **Diagrams over prose** for structure and relationships.
 
-## Readability
+## Format and readability
 
+- **Diagrams over prose** for structure, relationships and paths. Pair
+  explanations with visuals wherever a picture carries the idea better than a
+  paragraph.
 - Keep every diagram line at or under 120 characters so it never wraps.
 - Avoid hard-to-distinguish symbols — circled numbers such as ① ② ③,
   full-width glyphs, decorative marks. Use plain numbering (`1.` `2.` `3.`),
@@ -162,26 +175,33 @@ notes, richer visuals (Mermaid, canvases, embedded graphs) are available.
 2. Agent asks via `ask_user` whether to keep synchronized notes in the
    Obsidian vault.
 3. Agent recalls the ML knowledge network and sketches the framework
-   (vectors → similarity → attention → self-attention → transformers).
+   (vectors → similarity → attention → self-attention → transformers), split
+   into stages such as "representing meaning", "attention", "transformer
+   blocks".
 4. Agent proposes candidate goals via `ask_user`, e.g.:
    - Understand attention well enough to read a paper.
    - Grasp the intuition only, no math.
    - Implement a minimal transformer.
 5. User picks one.
 6. Agent searches the user's notes, then asks one boundary question, e.g.
-   "Which best describes your comfort with vector embeddings?" with options.
+   "Which of these do you already understand well?" with options such as
+   vectors and embeddings, dot products, neural networks, all of them.
 7. Agent draws the plan, presents it, adjusts on feedback, and repeats until
    the user agrees:
 
    ```
    boundary: vector embeddings
-     └─ dot-product similarity
-          └─ attention weights
-               └─ self-attention
-                    └─ multi-head attention   <- goal
+     1. representing meaning
+        └─ dot-product similarity
+     2. attention
+        └─ attention weights
+     3. transformer blocks
+        └─ self-attention
+             └─ multi-head attention   <- goal
    ```
 
-8. Agent teaches step by step, one node per step, with diagrams, updating the
-   notes if the user opted in.
-9. After the attention step, the agent asks one reasoning question, corrects
-   the misunderstanding it reveals, then continues.
+8. Agent teaches stage 1, one node per step, with diagrams, updating the notes
+   if the user opted in.
+9. After stage 1 the agent asks one reasoning question that requires deriving
+   the next node, corrects the misunderstanding it reveals, then continues to
+   stage 2.
