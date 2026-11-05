@@ -42,7 +42,7 @@ forgotten is Phase 1 — do not start from the goal, start from the map.
 
 ```
 0. offer synchronized notes            (user decides)
-1. map the knowledge network, split into stages
+1. research the web + project files, map the network, split stages
 2. confirm the goal + cognitive boundary (user decides)
 3. agree on the learning plan            (iterate until consensus)
 4. teach stage by stage
@@ -70,13 +70,18 @@ stages, the agreed plan, each new node and edge, open questions, and
 misunderstandings that were corrected. If the user says no, never write notes
 and never generate diagram files; keep everything in the conversation.
 
-### Phase 1 — Recall the knowledge network and draw the framework
+### Phase 1 — Research sources, recall the knowledge network, draw the framework
 
-1. Retrieve or recall the knowledge network for the subject: the concepts
-   involved and the logical relations between them.
-2. Sketch the framework: the map of nodes and edges covering the target
+1. Ground the subject before drawing anything: search the web for
+   authoritative material, and search the project files — repository, docs,
+   code, configuration — for how the subject actually shows up in the user's
+   own context. The web keeps the map correct; the project keeps it relevant.
+   Say which sources the framework rests on.
+2. From those sources, retrieve the knowledge network: the concepts involved
+   and the logical relations between them.
+3. Sketch the framework: the map of nodes and edges covering the target
    concept, and where the target sits inside it.
-3. Split that framework into learning stages — a few coherent chunks that can
+4. Split that framework into learning stages — a few coherent chunks that can
    each be taught and checked as a unit. Stages are the unit for Phase 4 and
    Phase 5; the edges inside a stage stay individual steps.
 
@@ -95,8 +100,9 @@ multiple-choice options.
 **Boundary.** Find out what the user already knows and where their
 understanding stops:
 
-1. Search the user's local knowledge base first — notes, files, earlier
-   conversation — for evidence of existing knowledge.
+1. Gather evidence of existing knowledge before asking: the project files and
+   external sources already read in Phase 1, plus the user's notes and earlier
+   conversation.
 2. Then probe with `ask_user`: present candidate starting points read off the
    framework and let the user say which ones they already hold, and where they
    start to feel unsure.
@@ -146,8 +152,8 @@ After finishing each learning task — each stage, not only at the very end:
 - **Use `ask_user`** for every question.
 - **Mostly multiple choice**, with a few short open-ended questions; **never
   yes/no or true/false questions** — they reveal little about understanding.
-- **Big picture first.** Draw the framework before asking about goals or
-  boundaries.
+- **Big picture first.** Research the sources, draw the framework, then ask
+  about goals or boundaries.
 - **The user owns the goal.** Offer candidates, do not decide.
 - **Agree before teaching.** No explanation until the plan is confirmed.
 
@@ -173,9 +179,10 @@ notes, richer visuals (Mermaid, canvases, embedded graphs) are available.
 1. User: "I want to learn how transformers work."
 2. Agent asks via `ask_user` whether to keep synchronized notes in the
    Obsidian vault.
-3. Agent recalls the ML knowledge network and sketches the framework
-   (vectors → similarity → attention → self-attention → transformers), split
-   into stages such as "representing meaning", "attention", "transformer
+3. Agent searches the web for authoritative material and the project files
+   for how transformers appear in the user's own code, then sketches the
+   framework (vectors → similarity → attention → self-attention → transformers),
+   split into stages such as "representing meaning", "attention", "transformer
    blocks".
 4. Agent proposes candidate goals via `ask_user`, e.g.:
    - Understand attention well enough to read a paper.
