@@ -1,13 +1,11 @@
 ---
 name: learning-guide
 description: >
-  Teach a topic through a structured, interactive lesson: map the knowledge
-  network into stages, confirm the learner's goal and cognitive boundary,
-  agree on a learning plan, then teach stage by stage with diagrams and
-  understanding checks, optionally keeping synchronized notes in the user's
-  Obsidian vault. Use when the user asks to learn, understand, or be taught a
-  topic ("teach me X", "explain X to me", "help me understand X", "walk me
-  through X"). Not for quick factual lookups or one-line definitions.
+  Teach a topic to a user through an interactive, one-on-one lesson. Use when
+  the user asks to learn, understand, or be taught a topic ("teach me X",
+  "explain X to me", "help me understand X", "walk me through X"), or says
+  they want to really get how something works. Not for quick factual lookups
+  or one-line definitions.
 ---
 
 # Learning guide
@@ -63,13 +61,14 @@ learning. Use `ask_user` with multiple-choice options, for example:
 - Keep synchronized notes in my Obsidian vault.
 - No notes, just the conversation.
 
-Notes live inside the user's Obsidian vault and are rendered by Obsidian, so
-they can carry rich visualization — Mermaid diagrams, canvases, graph views,
-tables — beyond what the chat can show. If the user says yes, create and keep
-updating the notes as the lesson advances: framework and stages, the agreed
-plan, each new node and edge, open questions, and misunderstandings that were
-corrected. If the user says no, never write notes; keep everything in the
-conversation.
+Where the notes live: inside the user's Obsidian vault, displayed by Obsidian.
+When notes are synchronized, complex diagram files can be generated in the
+vault and rendered by Obsidian — Mermaid diagrams, canvases, graph views,
+tables — carrying visuals beyond what the chat can show. If the user says yes,
+create and keep updating the notes as the lesson advances: framework and
+stages, the agreed plan, each new node and edge, open questions, and
+misunderstandings that were corrected. If the user says no, never write notes
+and never generate diagram files; keep everything in the conversation.
 
 ### Phase 1 — Recall the knowledge network and draw the framework
 
