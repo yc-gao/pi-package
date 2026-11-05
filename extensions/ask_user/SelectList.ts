@@ -15,6 +15,12 @@ export class SelectList implements Component {
     private selectedItems: Set<number> = new Set();
     private currentIndex: number = 0;
 
+    // 渲染缓存：按宽度缓存渲染结果，状态或主题变化时清空
+    private cachedWidth: number | undefined;
+    private cachedLines: string[] | undefined;
+    // 影响渲染结果的状态快照，用于 handleInput 之外的变更检测
+    private cachedSignature: string | undefined;
+
     public onSubmit: (items: string[]) => void = () => { };
     public onCancel: () => void = () => { }
 
@@ -25,6 +31,11 @@ export class SelectList implements Component {
     }
 
     render(width: number): string[] {
+        const signature = this.getSignature();
+        if (this.cachedLines && this.cachedWidth === width && this.cachedSignature === signature) {
+            return this.cachedLines;
+        }
+
         let lines: string[] = [];
 
         if (this.options.length === 0) {
@@ -47,6 +58,10 @@ export class SelectList implements Component {
         lines.push("");
         lines.push(truncateToWidth(this.theme.dim(this.renderHint()), width));
 
+        this.cachedWidth = width;
+        this.cachedLines = lines;
+        this.cachedSignature = signature;
+
         return lines;
     }
     handleInput(data: string) {
@@ -56,16 +71,19 @@ export class SelectList implements Component {
         }
         if (this.keybindings.matches(data, "tui.select.confirm")) {
             this.onSubmit([...this.selectedItems].map(i => this.options[i]));
+            return;
         }
 
         if (this.options.length === 0) return;
 
         if (this.keybindings.matches(data, "tui.select.up")) {
             this.currentIndex = (this.currentIndex - 1 + this.options.length) % this.options.length;
+            this.invalidate();
             return;
         }
         if (this.keybindings.matches(data, "tui.select.down")) {
             this.currentIndex = (this.currentIndex + 1) % this.options.length;
+            this.invalidate();
             return;
         }
         if (matchesKey(data, "space")) {
@@ -74,10 +92,21 @@ export class SelectList implements Component {
             } else {
                 this.selectedItems.add(this.currentIndex);
             }
+            this.invalidate();
             return;
         }
     }
-    invalidate() { }
+
+    /** Clear cached output, e.g. after a theme change or state mutation outside handleInput. */
+    invalidate() {
+        this.cachedWidth = undefined;
+        this.cachedLines = undefined;
+        this.cachedSignature = undefined;
+    }
+
+    private getSignature(): string {
+        return `${this.currentIndex}|${[...this.selectedItems].sort((a, b) => a - b).join(",")}`;
+    }
 
 
     /** Resolve a configured keybinding to its keys, falling back to a literal symbol. */
