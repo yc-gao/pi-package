@@ -107,6 +107,6 @@ export class SelectList implements Component {
         const hint = this.multiSelect
             ? `${navigate} navigate • space select/deselect • ${confirm} confirm • ${cancel} cancel`
             : `${navigate} navigate • ${confirm} select • ${cancel} cancel`;
-        return `  ${hint}`;
+        return `${hint}`;
     }
 }
