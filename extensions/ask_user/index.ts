@@ -42,7 +42,19 @@ async function executeMultiSelect(
     ctx: ExtensionToolContext,
     signal: AbortSignal,
 ): Promise<AgentToolResult<AskUserDetails>> {
+    if (signal.aborted) {
+        return buildResult("User cancelled.", params)
+    }
+
+    let onAbort: (() => void) | undefined;
     const answers = await ctx.ui.custom<string[] | undefined>((tui, theme, keybindings, done) => {
+        let finished = false;
+        const finish = (result: string[] | undefined) => {
+            if (finished) return;
+            finished = true;
+            if (onAbort) signal.removeEventListener("abort", onAbort);
+            done(result);
+        }
 
         const container = new Container();
         container.addChild(new Text(theme.fg("accent", params.question), 0, 1));
@@ -54,9 +66,14 @@ async function executeMultiSelect(
                 dim: (text) => theme.fg("dim", text),
             },
             keybindings)
-        selectList.onSubmit = (selected: string[]) => { done(selected) }
-        selectList.onCancel = () => { done(undefined) }
+        selectList.onSubmit = (selected: string[]) => { finish(selected) }
+        selectList.onCancel = () => { finish(undefined) }
         container.addChild(selectList);
+
+        onAbort = () => { finish(undefined) };
+        signal.addEventListener("abort", onAbort, { once: true });
+        // 补逸漏：若在预检查之后、注册监听之前已经中止，abort 事件不会再触发
+        if (signal.aborted) finish(undefined);
 
         return {
             render(width: number): string[] {
@@ -69,6 +86,8 @@ async function executeMultiSelect(
             invalidate() { return container.invalidate(); }
         }
     });
+
+    if (onAbort) signal.removeEventListener("abort", onAbort);
 
     if (answers === undefined) {
         return buildResult("User cancelled.", params)
