@@ -64,11 +64,13 @@ learning. Use `ask_user` with multiple-choice options, for example:
 Where the notes live: inside the user's Obsidian vault, displayed by Obsidian.
 When notes are synchronized, complex diagram files can be generated in the
 vault and rendered by Obsidian — Mermaid diagrams, canvases, graph views,
-tables — carrying visuals beyond what the chat can show. If the user says yes,
-create and keep updating the notes as the lesson advances: framework and
-stages, the agreed plan, each new node and edge, open questions, and
-misunderstandings that were corrected. If the user says no, never write notes
-and never generate diagram files; keep everything in the conversation.
+tables — carrying visuals beyond what the chat can show. If none of the richer
+formats fits, fall back to writing a raw SVG file into the vault; Obsidian
+renders it too. If the user says yes, create and keep updating the notes as
+the lesson advances: framework and stages, the agreed plan, each new node and
+edge, open questions, and misunderstandings that were corrected. If the user
+says no, never write notes and never generate diagram files; keep everything
+in the conversation.
 
 ### Phase 1 — Research sources, recall the knowledge network, draw the framework
 
@@ -172,7 +174,8 @@ After finishing each learning task — each stage, not only at the very end:
 
 ASCII trees for hierarchy, node-edge graphs for the knowledge network, arrow
 chains for causal or derivation paths, tables for comparisons. In Obsidian
-notes, richer visuals (Mermaid, canvases, embedded graphs) are available.
+notes, richer visuals (Mermaid, canvases, embedded graphs) are available, with
+raw SVG files as the fallback when a richer format cannot express the diagram.
 
 ## Example flow
 
