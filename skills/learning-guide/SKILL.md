@@ -11,7 +11,8 @@ description: >
 # Learning guide
 
 Run a lesson as a guided build-up, not a lecture dump. Nothing is explained
-until the map, the goal, the boundary and the plan are settled with the user.
+until the map, the goal, the boundary and the plan are settled with the user,
+and the lesson closes by retracing the path that was walked.
 
 ## Core principles
 
@@ -41,12 +42,12 @@ The phases are ordered and all of them are required. The step most often
 forgotten is Phase 1 — do not start from the goal, start from the map.
 
 ```
-0. offer synchronized notes            (user decides)
+0. offer synchronized notes              (user decides)
 1. research the web + project files, map the network, split stages
 2. confirm the goal + cognitive boundary (user decides)
 3. agree on the learning plan            (iterate until consensus)
-4. teach stage by stage
-5. check understanding after each task
+4. teach stage by stage, checking after each task
+5. summarize and retrace the learning path (once the goal is reached)
 ```
 
 Keep the big picture: the framework from Phase 1 stays the backbone. Goals,
@@ -62,15 +63,15 @@ learning. Use `ask_user` with multiple-choice options, for example:
 - No notes, just the conversation.
 
 Where the notes live: inside the user's Obsidian vault, displayed by Obsidian.
-When notes are synchronized, complex diagram files can be generated in the
-vault and rendered by Obsidian — Mermaid diagrams, canvases, graph views,
-tables — carrying visuals beyond what the chat can show. If none of the richer
-formats fits, fall back to writing a raw SVG file into the vault; Obsidian
-renders it too. If the user says yes, create and keep updating the notes as
-the lesson advances: framework and stages, the agreed plan, each new node and
-edge, open questions, and misunderstandings that were corrected. If the user
-says no, never write notes and never generate diagram files; keep everything
-in the conversation.
+When notes are synchronized, the notes are the primary display — the
+conversation explains and the vault shows. Complex visuals live there:
+Mermaid diagrams, canvases, graph views, tables, and generated image files
+referenced from the notes. If none of the richer formats fits, fall back to
+writing a raw SVG file into the vault; Obsidian renders it too. If the user
+says yes, create and keep updating the notes as the lesson advances: framework
+and stages, the agreed plan, each new node and edge, open questions, and
+misunderstandings that were corrected. If the user says no, never write notes
+and never generate diagram files; keep everything in the conversation.
 
 ### Phase 1 — Research sources, recall the knowledge network, draw the framework
 
@@ -119,14 +120,16 @@ that follows.
    inside it, in order.
 2. The plan must spread outward from the boundary: every step reachable from
    the previous one, nothing introduced before its prerequisites. Never jump
-   ahead of the boundary because a concept is important.
+   ahead of the boundary because a concept is important, and never introduce
+   material that is too hard to build from what the learner holds.
 3. The plan must always move toward the agreed goal: cut anything that is only
    tangential, no matter how interesting or how much it belongs to the
    framework.
 4. Present the plan and iterate: adjust on feedback, re-present, repeat until
-   the user agrees. Do not teach anything before consensus is explicit.
+   the user agrees. Keep communicating until consensus is reached, and do not
+   teach anything before it is explicit.
 
-### Phase 4 — Teach stage by stage
+### Phase 4 — Teach stage by stage, checking understanding
 
 Advance along the agreed path, one stage at a time. Each step inside a stage:
 
@@ -135,8 +138,6 @@ Advance along the agreed path, one stage at a time. Each step inside a stage:
 - Explains the logical relationship, not only the fact, so the new knowledge
   joins the network instead of floating beside it.
 - Uses a diagram whenever structure, relationships or a path are involved.
-
-### Phase 5 — Check understanding after each task
 
 After finishing each learning task — each stage, not only at the very end:
 
@@ -147,6 +148,15 @@ After finishing each learning task — each stage, not only at the very end:
   learner actually holds, then continue.
 - Update the notes if the user opted in.
 - Only move to the next stage once the current one is confirmed.
+
+### Phase 5 — Summarize and retrace the learning path
+
+Once the goal is reached, close the lesson by summarizing. Reconstruct the
+path that was walked: where the learner started, which nodes and edges were
+added in order, and why each one followed from the previous. Make the shape of
+the new network visible — the learner should see how the goal can now be
+derived from what they already understood at the start. Fold the summary into
+the notes if the user opted in.
 
 ## Interaction rules
 
@@ -174,8 +184,9 @@ After finishing each learning task — each stage, not only at the very end:
 
 ASCII trees for hierarchy, node-edge graphs for the knowledge network, arrow
 chains for causal or derivation paths, tables for comparisons. In Obsidian
-notes, richer visuals (Mermaid, canvases, embedded graphs) are available, with
-raw SVG files as the fallback when a richer format cannot express the diagram.
+notes, richer visuals (Mermaid, canvases, embedded graphs, generated images)
+are available, with raw SVG files as the fallback when a richer format cannot
+express the diagram.
 
 ## Example flow
 
@@ -214,3 +225,6 @@ raw SVG files as the fallback when a richer format cannot express the diagram.
 9. After stage 1 the agent asks one reasoning question that requires deriving
    the next node, corrects the misunderstanding it reveals, then continues to
    stage 2.
+10. Once the goal is reached, the agent summarizes the lesson by retracing the
+    path from vector embeddings to multi-head attention, showing how each node
+    followed from the previous one.
